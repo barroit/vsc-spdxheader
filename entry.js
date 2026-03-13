@@ -8,7 +8,7 @@ import {
 	 vsc_add_editor_cmd,
 	 vsc_fetch_config,
 	 vsc_map_ctx,
-} from './helper/vsc.js'
+} from './lib/vsc.js'
 
 const cmds = {
 	'add':       [ import('./cmd/add.js'),       vsc_add_editor_cmd ],

@@ -5,21 +5,21 @@
 
 import { extname } from 'node:path'
 
-import { fmt_ensure_arg, fmt_resolve } from '../helper.patch/fmt.js'
-import { git_ls_files } from '../helper/git.js'
+import { fmt_ensure_arg, fmt_resolve } from '../lib/fmt.js'
+import { git_ls_files } from '../lib/git.js'
 import {
 	vsc_apply,
 	vsc_open,
 	vsc_save_all,
 	vsc_ws_edit,
 	vsc_uri,
-} from '../helper/vsc.js'
+} from '../lib/vsc.js'
 
 import {
 	spdx_fixup_id,
 	spdx_emit_header,
 	spdx_pick_license,
-} from '../helper.patch/spdx.js'
+} from '../lib/spdx.js'
 
 function move(doc, cursor, from, to)
 {

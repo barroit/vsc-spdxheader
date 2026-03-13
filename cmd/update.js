@@ -3,15 +3,15 @@
  * Copyright 2025 Jiamu Sun <barroit@linux.com>
  */
 
-import { git_user_name, git_user_email } from '../helper/git.js'
-import { today } from '../helper/time.js'
-import { vsc_pos, vsc_range } from '../helper/vsc.js'
+import { git_user_name, git_user_email } from '../lib/git.js'
+import { today } from '../lib/time.js'
+import { vsc_pos, vsc_range } from '../lib/vsc.js'
 
 import {
 	fmt_ensure_arg,
 	fmt_resolve,
 	fmt_emit_re,
-} from '../helper.patch/fmt.js'
+} from '../lib/fmt.js'
 
 function find_pre_copr(copr)
 {

@@ -1,38 +1,4 @@
 spdxheader
 ==========
 
-This repo tracks spdxheader source code. It's a vscode extension, for generating
-SPDX header in source file.
-
-image/negi.png is licensed under LicenseRef-MDM-2.1.
-
-Install from source
-===================
-
-On Linux and macOS, in spdxheader repo, run:
-
-	# Clone vscdevp.git into ../vscdevp.
-	# Use HTTPS URL if you haven't set up SSH for GitHub.
-	(cd ..; git clone git@github.com:barroit/vscdevp.git)
-
-	# Install build tools
-	pnpm -g add terser esbuild @vscode/vsce
-
-	# Build and install extension
-	resize=1 make
-
-This requires esbuild, terser, vsce, jq, and m4 available in PATH. It builds the
-resized version of extension and uses pnpm by default. You can tell it to use
-another package manager by specifying npm=xxx in env. Just make sure it accepts
-args like:
-
-	i -D xxx
-
-On Windows, workflow is the same. If you are not using POSIX compliant shell,
-adjust the command syntax. Keep in mind tools like gmake, jq and m4 must be
-available in PATH.
-
-Why does this exist?
-====================
-
-Just because File Header Comment is dumb and hard to use like hell.
+This repo tracks spdxheader source. It generates SPDX header in source file.

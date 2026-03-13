@@ -3,7 +3,7 @@
  * Copyright 2025 Jiamu Sun <barroit@linux.com>
  */
 
-import { vsc_exec_cmd } from '../helper/vsc.js'
+import { vsc_exec_cmd } from '../lib/vsc.js'
 
 export function exec()
 {

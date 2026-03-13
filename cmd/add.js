@@ -5,22 +5,22 @@
 
 import { isMatch as test } from 'picomatch'
 
-import { git_user_name, git_user_email } from '../helper/git.js'
-import { info, die } from '../helper/mesg.js'
-import { today } from '../helper/time.js'
-import { vsc_pos, vsc_range, vsc_quick_pick } from '../helper/vsc.js'
+import { git_user_name, git_user_email } from '../lib/git.js'
+import { info, die } from '../lib/mesg.js'
+import { today } from '../lib/time.js'
+import { vsc_pos, vsc_range, vsc_quick_pick } from '../lib/vsc.js'
 
 import {
 	fmt_has_arg,
 	fmt_ensure_arg,
 	fmt_resolve,
 	fmt_assert_single,
-} from '../helper.patch/fmt.js'
+} from '../lib/fmt.js'
 import {
 	spdx_pick_license,
 	spdx_fixup_id,
 	spdx_emit_header,
-} from '../helper.patch/spdx.js'
+} from '../lib/spdx.js'
 
 const INSERT  = 0
 const REPLACE = 1
