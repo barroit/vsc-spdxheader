@@ -39,7 +39,7 @@ package-y  := package.json
 $(package-y): %: %.in $(package-in) $(npm-module-y)
 	$(m4) $< >$@
 
-npm-packages := picomatch escape-string-regexp
+npm-packages := picomatch
 npm-modules  := $(addprefix $(module-prefix)/,$(npm-packages))
 npm-module-y := $(addsuffix /package.json,$(npm-modules))
 

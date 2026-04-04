@@ -4,7 +4,6 @@
  */
 
 import { git_user_name, git_user_email } from '../lib/git.js'
-import { today } from '../lib/time.js'
 import { vsc_pos, vsc_range } from '../lib/vsc.js'
 
 import {
@@ -216,7 +215,8 @@ export function exec(editor, _, args, edit)
 	const [ [ offset ], year_str ] = copr_found
 	const years = split_copr_year(year_str)
 
-	const { year } = today()
+	const date = new Date()
+	const year = date.getFullYear()
 	const last_record = years[years.length - 1][1]
 
 	if (last_record[last_record.length - 1] == year)

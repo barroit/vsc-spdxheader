@@ -6,8 +6,8 @@
 import {
 	 vsc_add_cmd,
 	 vsc_add_editor_cmd,
-	 vsc_fetch_config,
 	 vsc_map_ctx,
+	 vsc_resolve_config,
 } from './lib/vsc.js'
 
 const cmds = {
@@ -19,7 +19,7 @@ const cmds = {
 
 function fetch_format()
 {
-	return vsc_fetch_config('spdxheader')
+	return vsc_resolve_config('spdxheader')
 }
 
 export async function activate(ctx)

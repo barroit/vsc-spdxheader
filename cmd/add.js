@@ -7,7 +7,6 @@ import { isMatch as test } from 'picomatch'
 
 import { git_user_name, git_user_email } from '../lib/git.js'
 import { info, die } from '../lib/mesg.js'
-import { today } from '../lib/time.js'
 import { vsc_pos, vsc_range, vsc_quick_pick } from '../lib/vsc.js'
 
 import {
@@ -108,8 +107,9 @@ async function insert_spdx(editor, fmt, fmt_path, changes, next, args)
 
 async function insert_copr(editor, fmts, fmts_path, changes, next_in)
 {
+	const date = new Date()
 	const doc = editor.document
-	const { year } = today()
+	const year = date.getFullYear()
 
 	const user = git_user_name()
 	const email = git_user_email()
