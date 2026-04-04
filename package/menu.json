@@ -14,7 +14,7 @@ dnl
       "when": "activeEditor =~ /text(File|Resource)Editor$/"
    },
    {
-      "command": "spdxheader.addef",
+      "command": "spdxheader.add-cached",
       "group": ".",
       "when": "activeEditor =~ /text(File|Resource)Editor$/"
    },

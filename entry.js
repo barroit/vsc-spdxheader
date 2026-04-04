@@ -11,10 +11,10 @@ import {
 } from './lib/vsc.js'
 
 const cmds = {
-	'add':       [ import('./cmd/add.js'),       vsc_add_editor_cmd ],
-	'addef':     [ import('./cmd/addef.js'),     vsc_add_editor_cmd ],
-	'update':    [ import('./cmd/update.js'),    vsc_add_editor_cmd ],
-	'move-ws':   [ import('./cmd/move_ws.js'),   vsc_add_cmd        ],
+	'add':        [ import('./cmd/add.js'),        vsc_add_editor_cmd ],
+	'add-cached': [ import('./cmd/add_cached.js'), vsc_add_editor_cmd ],
+	'update':     [ import('./cmd/update.js'),     vsc_add_editor_cmd ],
+	'move-ws':    [ import('./cmd/move_ws.js'),    vsc_add_cmd        ],
 }
 
 function fetch_format()

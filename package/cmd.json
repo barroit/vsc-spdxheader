@@ -8,7 +8,7 @@ dnl
                   activeEditor =~ /text(File|Resource)Editor$/"
 },
 {
-   "command": "spdxheader.addef",
+   "command": "spdxheader.add-cached",
    "title": "add header",
    "category": "spdx",
    "enablement": "workbenchState != empty && dnl
