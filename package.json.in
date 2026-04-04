@@ -17,17 +17,17 @@ dnl
       "configuration": {
          "type": "object",
          "properties": {
-include([[package/config.json]])dnl
+include([[meta/config.json]])dnl
          }
       },
       "commands": [
-include([[package/cmd.json]])dnl
+include([[meta/cmd.json]])dnl
       ],
       "menus": {
-include([[package/menu.json]])dnl
+include([[meta/menu.json]])dnl
       },
       "submenus": [
-include([[package/submenu.json]])dnl
+include([[meta/submenu.json]])dnl
       ]
    },
    "displayName": "SPDX Header",

@@ -14,8 +14,7 @@ import {
 
 function find_pre_copr(copr)
 {
-	const re = FMT_ARG_RE
-	const stop = copr.findIndex(re.test, re)
+	const stop = copr.findIndex(re.test, FMT_ARG_RE)
 	const skip = copr.slice(0, stop)
 
 	return skip

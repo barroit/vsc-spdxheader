@@ -1,90 +1,77 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-name := spdxheader
+name := $(shell head -1 README)
 
 pnpm ?= pnpm
-pnpm += install
-pnpm-d := $(pnpm) -D
+pnpm += add -D
 
 m4 ?= m4
-m4 := printf '%s\n%s' 'changequote([[, ]])' 'undefine(shift)' | $(m4) -
+m4 := printf '%s' 'changequote([[, ]])' | $(m4) -
 
 esbuild ?= esbuild
-esbuild += --bundle --format=esm
-esbuild += --define:NULL=null --define:NAME='"$(name)"' --inject:define.js
+esbuild += --bundle --format=esm --platform=node
+esbuild += --define:NAME='"$(name)"' --inject:define.js
 
 terser ?= terser
 terser += --module --ecma 2020 --mangle --comments false \
 	  --compress 'passes=3,pure_getters=true,unsafe=true'
 
-prefix := build
-m4-prefix := $(prefix)/m4
-license-prefix := license-list-data/json
-module-prefix := node_modules
+objtree := build
+m4dir := $(objtree)/m4
 
-ifneq ($(minimize),)
-	minimize := -terser
-endif
-
-ifneq ($(debug),)
-	debug := -debug
+ifneq ($(MINIMIZE),)
+	MINIMIZE := -min
 endif
 
 .PHONY: install uninstall publish
 install:
 
-package-in := $(wildcard package/*.json)
-package-y  := package.json
+meta-src := $(wildcard meta/*.json)
+meta-y := package.json
 
-$(package-y): %: %.in $(package-in) $(npm-module-y)
+package_list := picomatch
+package-o := $(addprefix node_modules/,$(package_list))
+package-y := $(addsuffix /package.json,$(package-o))
+
+node_modules/%/package.json:
+	$(pnpm) $*
+	touch package.json.in
+
+$(meta-y): package.json.in $(meta-src) $(package-y)
 	$(m4) $< >$@
 
-npm-packages := picomatch
-npm-modules  := $(addprefix $(module-prefix)/,$(npm-packages))
-npm-module-y := $(addsuffix /package.json,$(npm-modules))
+license_ids-y := $(objtree)/license_ids.json
 
-$(npm-module-y): $(module-prefix)/%/package.json:
-	$(pnpm-d) $*
-	touch $(package-y).in
-
-license-y := $(prefix)/licenses.json
-
-$(license-y): $(prefix)/%: $(license-prefix)/%
+$(license_ids-y): license-list-data/json/licenses.json
 	mkdir -p $(@D)
-	jq -c '{ ids: [ .licenses[].licenseId ] }' $< >$@
+	jq -c '[ .licenses[].licenseId ]' <$< >$@
 
-spdxheader-m4-in := entry.js $(wildcard cmd/*.js) $(wildcard lib/*.js)
-spdxheader-m4-y  := $(addprefix $(m4-prefix)/,$(spdxheader-m4-in))
-spdxheader-y := $(prefix)/entry.js
+spdxheader-src := entry.js $(wildcard cmd/*.js) $(wildcard lib/*.js)
+spdxheader-m4  := $(addprefix $(m4dir)/,$(spdxheader-src))
+spdxheader-y   := $(objtree)/entry.js
 
-$(m4-prefix)/%: %
+$(m4dir)/%: %
 	mkdir -p $(@D)
 	$(m4) $< >$@
 
-$(spdxheader-y)1: $(spdxheader-m4-y) $(license-y) $(npm-module-y)
+$(spdxheader-y)1: $(spdxheader-m4) $(license_ids-y) $(package-y)
 	$(esbuild) --banner:js="import { createRequire } from 'node:module'; \
-		   		var require = createRequire(import.meta.url);" \
-		   --sourcemap --platform=node --external:vscode --outfile=$@ $<
+				var require = createRequire(import.meta.url);" \
+		   --sourcemap=inline --external:vscode --outfile=$@ $<
 
-terser-y := $(addsuffix 1-terser,$(spdxheader-y))
-debug-y  := $(addsuffix -debug,$(spdxheader-y))
+$(spdxheader-y)1-min: %-min: %
+	$(terser) >$@ <$<
 
-$(terser-y): %1-terser: %1
-	$(terser) <$< >$@
+$(spdxheader-y): %: %1$(MINIMIZE)
+	cp $< $@
 
-$(spdxheader-y): %: %1$(minimize)
-	head -n1 entry.js >$@
-	printf '\n' >>$@
-	cat $< >>$@
+README.md: NOTREADME.md
+	$(m4) $< >$@
 
-$(debug-y): %-debug: %1
-	ln -f $< $@
-	ln -f $< $*
+archive-src := $(spdxheader-y) README.md $(wildcard image/*)
+archive-y  := $(objtree)/$(name).vsix
 
-archive-in := $(addsuffix $(debug),$(spdxheader-y)) README $(wildcard image/*)
-archive-y  := $(prefix)/$(name).vsix
-
-$(archive-y): $(archive-in) $(package-y)
+$(archive-y): $(archive-src) $(meta-y)
 	vsce package --skip-license -o $@
 
 install: $(archive-y)
@@ -100,12 +87,10 @@ publish: $(archive-y)
 .PHONY: clean distclean
 
 clean:
-	rm -f $(archive-y)
-	rm -f $(spdxheader-m4-y) $(spdxheader-y)*
-	rm -f $(license-y)
+	rm -f $(archive-y) README.md
+	rm -f $(spdxheader-m4) $(spdxheader-y)*
+	rm -f $(license_ids-y)
 
 distclean: clean
-	rm -f $(package-y)
-	rm -f $(license-y)
-	test -d $(module-prefix) && \
-	find $(module-prefix) -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+	rm -f $(meta-y)
+	find node_modules -type f -exec rm -f {} + 2>/dev/null || true
