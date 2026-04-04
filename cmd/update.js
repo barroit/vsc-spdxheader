@@ -14,7 +14,7 @@ import {
 
 function find_pre_copr(copr)
 {
-	const stop = copr.findIndex(re.test, FMT_ARG_RE)
+	const stop = copr.findIndex(re.test, REPLACE_STR_RE)
 	const skip = copr.slice(0, stop)
 
 	return skip
@@ -54,12 +54,12 @@ function find_target_copr(doc, fmt, first)
 	const copr_re = fmt_emit_re(fmt, copr_re_match, { begin: 1 })
 
 	const user_re_repl = `${copr_re_match}{}${name} <${email}>`
-	const user_re_fmt = fmt.replace(FMT_ARG_RE, user_re_repl)
+	const user_re_fmt = fmt.replace(REPLACE_STR_RE, user_re_repl)
 
 	const user_re_match = '(?:\\d+(?:-\\d+)?,? )+'
 	const user_re = fmt_emit_re(user_re_fmt, user_re_match, { begin: 1 })
 
-	const empty_re_fmt = fmt.replace(FMT_ARG_RE, '')
+	const empty_re_fmt = fmt.replace(REPLACE_STR_RE, '')
 	const empty_re_str = empty_re_fmt.trimEnd()
 	const empty_re = fmt_emit_re(empty_re_str, '', { begin: 1, end: 1 })
 

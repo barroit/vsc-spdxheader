@@ -1,38 +1,46 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /*
- * Copyright 2025 Jiamu Sun <barroit@linux.com>
+ * Copyright 2026 Jiamu Sun <39@barroit.sh>
  */
 
+import { git_ensure_exec } from './lib/git.js'
 import {
-	 vsc_add_cmd,
-	 vsc_add_editor_cmd,
-	 vsc_map_ctx,
-	 vsc_resolve_config,
+	vsc_resolve_config,
+	vsc_map_ctx,
+	vsc_add_cmd,
+	vsc_exec_cmd,
 } from './lib/vsc.js'
 
-const cmds = {
-	'add':        [ import('./cmd/add.js'),        vsc_add_editor_cmd ],
-	'add-cached': [ import('./cmd/add_cached.js'), vsc_add_editor_cmd ],
-	'update':     [ import('./cmd/update.js'),     vsc_add_editor_cmd ],
-	'move-ws':    [ import('./cmd/move_ws.js'),    vsc_add_cmd        ],
-}
+const cmds = [
+	[ 'add',        import('./cmd/add.js'),        vsc_add_editor_cmd ],
+	[ 'add-cached', import('./cmd/add_cached.js'), vsc_add_editor_cmd ],
+	[ 'update',     import('./cmd/update.js'),     vsc_add_editor_cmd ],
+	[ 'move-ws',    import('./cmd/move_ws.js'),    vsc_add_cmd        ],
+]
 
-function fetch_format()
+function resolve_conf()
 {
 	return vsc_resolve_config('spdxheader')
 }
 
-export async function activate(ctx)
+async function register_cmd(ctx, [ name, __module, add_cmd ])
 {
-	for (const id of Object.keys(cmds)) {
-		const [ module_promise, cb ] = cmds[id]
+	const module = await __module
+	const cmd_ctx = { ...ctx }
 
-		const module = await module_promise
-		const cmd_ctx = vsc_map_ctx(ctx)
+	const exec_fn = BIND(module.exec, cmd_ctx)
+	const hook = add_cmd(name, exec_fn)
 
-		const exec = cb(`spdxheader.${id}`, module.exec, cmd_ctx)
+	ctx.cleanup.push(hook)
+}
 
-		cmd_ctx.fetch_format = fetch_format
-		ctx.subscriptions.push(exec)
-	}
+export async function activate(__ctx)
+{
+	await git_ensure_exec()
+
+	const ctx = vsc_map_ctx(__ctx)
+	const register_cmd_fn = BIND(register_cmd, ctx)
+
+	ctx.resolve_conf = resolve_conf
+	cmds.forEach(register_cmd_fn)
 }

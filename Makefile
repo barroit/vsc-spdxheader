@@ -9,8 +9,7 @@ m4 ?= m4
 m4 := printf '%s' 'changequote([[, ]])' | $(m4) -
 
 esbuild ?= esbuild
-esbuild += --bundle --format=esm --platform=node
-esbuild += --define:NAME='"$(name)"' --inject:define.js
+esbuild += --bundle --format=esm --platform=node --define:NAME='"$(name)"'
 
 terser ?= terser
 terser += --module --ecma 2020 --mangle --comments false \
@@ -50,9 +49,9 @@ spdxheader-src := entry.js $(wildcard cmd/*.js) $(wildcard lib/*.js)
 spdxheader-m4  := $(addprefix $(m4dir)/,$(spdxheader-src))
 spdxheader-y   := $(objtree)/entry.js
 
-$(m4dir)/%: %
+$(m4dir)/%: lib/helper.m4 %
 	mkdir -p $(@D)
-	$(m4) $< >$@
+	$(m4) $^ >$@
 
 $(spdxheader-y)1: $(spdxheader-m4) $(license_ids-y) $(package-y)
 	$(esbuild) --banner:js="import { createRequire } from 'node:module'; \
