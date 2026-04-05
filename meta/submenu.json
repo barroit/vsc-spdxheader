@@ -1,6 +1,6 @@
 dnl SPDX-License-Identifier: GPL-3.0-or-later
 dnl
 {
-   "id": "spdxheader",
+   "id": "NAME",
    "label": "SPDX Header"
 }

@@ -1,28 +1,28 @@
 dnl SPDX-License-Identifier: GPL-3.0-or-later
 dnl
 {
-   "command": "spdxheader.add",
+   "command": "NAME.add",
    "title": "add header (select)",
    "category": "spdx",
    "enablement": "workbenchState != empty && dnl
                   activeEditor =~ /text(File|Resource)Editor$/"
 },
 {
-   "command": "spdxheader.add-cached",
+   "command": "NAME.add-cached",
    "title": "add header",
    "category": "spdx",
    "enablement": "workbenchState != empty && dnl
                   activeEditor =~ /text(File|Resource)Editor$/"
 },
 {
-   "command": "spdxheader.update",
+   "command": "NAME.update",
    "title": "update header",
    "category": "spdx",
    "enablement": "workbenchState != empty && dnl
                   activeEditor =~ /text(File|Resource)Editor$/"
 },
 {
-   "command": "spdxheader.move-ws",
+   "command": "NAME.move-ws",
    "title": "move license id (workspace)",
    "category": "spdx",
    "enablement": "workbenchState != empty"

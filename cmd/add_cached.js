@@ -5,12 +5,11 @@
 
 import { vsc_exec_cmd } from '../lib/vsc.js'
 
-export function exec()
+export function exec(ctx, editor)
 {
-	const state = this.ws_state
+	const lang = editor.document.languageId
+	const license = ctx.ws_state.get('NAME_license')
+	const interpreter = ctx.ws_state.get(`NAME_interpreter_${lang}`)
 
-	const license = state.get('license')
-	const args = [ license ]
-
-	vsc_exec_cmd('spdxheader.add', args)
+	vsc_exec_cmd('NAME.add', [ interpreter, license ])
 }

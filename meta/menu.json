@@ -2,29 +2,29 @@ dnl SPDX-License-Identifier: GPL-3.0-or-later
 dnl
 "editor/context": [
    {
-      "submenu": "spdxheader",
+      "submenu": "NAME",
       "group": "9_spdxheader",
       "when": "workbenchState != empty"
    }
 ],
-"spdxheader": [
+"NAME": [
    {
-      "command": "spdxheader.add",
+      "command": "NAME.add",
       "group": ".",
       "when": "activeEditor =~ /text(File|Resource)Editor$/"
    },
    {
-      "command": "spdxheader.add-cached",
+      "command": "NAME.add-cached",
       "group": ".",
       "when": "activeEditor =~ /text(File|Resource)Editor$/"
    },
    {
-      "command": "spdxheader.update",
+      "command": "NAME.update",
       "group": ".",
       "when": "activeEditor =~ /text(File|Resource)Editor$/"
    },
    {
-      "command": "spdxheader.move-ws",
+      "command": "NAME.move-ws",
       "group": "ws"
    }
 ]

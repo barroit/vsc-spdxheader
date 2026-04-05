@@ -1,27 +1,22 @@
 dnl SPDX-License-Identifier: GPL-3.0-or-later
 dnl
-"spdxheader.shebang": {
+"NAME.shebang": {
    "type": "object",
-   "description": "Shebang line applies only to sources whose language or dnl
-file extension matches a listed key. Value may be a program name. If value dnl
-is an object, spdxheader shows a program selection menu.",
+   "description": "...",
    "default": {
       "python": "/usr/bin/python3",
-      "sh": {
-         "bash":  "/bin/bash",
-         "posix": "/bin/sh",
-         "zsh":   "/bin/zsh"
-      }
+      "sh": [
+         "/bin/sh",
+         "/bin/bash",
+         "/bin/zsh"
+      ]
    }
 },
-"spdxheader.spdx": {
+"NAME.license": {
    "type": "object",
-   "description": "SPDX line applies to all sources. If no matching key is dnl
-found, * is used as a fallback. Value is used as header format, where {} is dnl
-replaced with the SPDX license identifier. If {} is missing, identifier is dnl
-appended to the end.",
+   "description": "...",
    "default": {
-      "*":     "#",
+      "*":     "FB_LICENSE",
       "c":     "//",
       "h":     "/* {} */",
       "html":  "<!-- {} -->",
@@ -31,18 +26,14 @@ appended to the end.",
       "rst":   ".."
    }
 },
-"spdxheader.copyright": {
+"NAME.copyright": {
    "type": "object",
-   "description": "Copyright notice applies only to sources whose language dnl
-or file extension matches a listed key, and passes the spdxheader.dnl
-copyright_enabled check. If no matching key is found, * is used as a dnl
-fallback. The value is used as the header format, where {} is replaced with dnl
-the SPDX license identifier. {} is required.",
+   "description": "...",
    "default": {
       "*": [
-         "/*",
-         " * {}",
-         " */"
+         "FB_COPYRIGHT_BEGIN",
+         "FB_COPYRIGHT",
+         "FB_COPYRIGHT_END"
       ],
       "html": [
          "<!--",
@@ -56,12 +47,9 @@ the SPDX license identifier. {} is required.",
       ]
    }
 },
-"spdxheader.copyright_enabled": {
+"NAME.copyright_rule": {
    "type": "object",
-   "markdownDescription": "Copyright notice applies only to sources whose dnl
-language or file extension matches a key listed here. Entries must be arrays dnl
-of [globs](https://www.npmjs.com/package/picomatch[[#]]globbing-features) dnl
-that mark files to ignore.",
+   "markdownDescription": "...",
    "default": {
       "c": [],
       "h": [],

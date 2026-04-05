@@ -8,6 +8,7 @@ import {
 	vsc_resolve_config,
 	vsc_map_ctx,
 	vsc_add_cmd,
+	vsc_add_editor_cmd,
 	vsc_exec_cmd,
 } from './lib/vsc.js'
 
@@ -20,7 +21,7 @@ const cmds = [
 
 function resolve_conf()
 {
-	return vsc_resolve_config('spdxheader')
+	return vsc_resolve_config('NAME')
 }
 
 async function register_cmd(ctx, [ name, __module, add_cmd ])
@@ -29,7 +30,7 @@ async function register_cmd(ctx, [ name, __module, add_cmd ])
 	const cmd_ctx = { ...ctx }
 
 	const exec_fn = BIND(module.exec, cmd_ctx)
-	const hook = add_cmd(name, exec_fn)
+	const hook = add_cmd(`NAME.${name}`, exec_fn)
 
 	ctx.cleanup.push(hook)
 }

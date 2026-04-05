@@ -9,7 +9,7 @@ m4 ?= m4
 m4 := printf '%s' 'changequote([[, ]])' | $(m4) -
 
 esbuild ?= esbuild
-esbuild += --bundle --format=esm --platform=node --define:NAME='"$(name)"'
+esbuild += --bundle --format=esm --platform=node
 
 terser ?= terser
 terser += --module --ecma 2020 --mangle --comments false \
@@ -25,6 +25,8 @@ endif
 .PHONY: install uninstall publish
 install:
 
+m4lib := $(wildcard lib/*.m4)
+
 meta-src := $(wildcard meta/*.json)
 meta-y := package.json
 
@@ -36,8 +38,8 @@ node_modules/%/package.json:
 	$(pnpm) $*
 	touch package.json.in
 
-$(meta-y): package.json.in $(meta-src) $(package-y)
-	$(m4) $< >$@
+$(meta-y): $(m4lib) package.json.in $(meta-src) | $(package-y)
+	$(m4) $(filter-out meta/%,$^) >$@
 
 license_ids-y := $(objtree)/license_ids.json
 
@@ -46,10 +48,10 @@ $(license_ids-y): license-list-data/json/licenses.json
 	jq -c '[ .licenses[].licenseId ]' <$< >$@
 
 spdxheader-src := entry.js $(wildcard cmd/*.js) $(wildcard lib/*.js)
-spdxheader-m4  := $(addprefix $(m4dir)/,$(spdxheader-src))
-spdxheader-y   := $(objtree)/entry.js
+spdxheader-m4 := $(addprefix $(m4dir)/,$(spdxheader-src))
+spdxheader-y := $(objtree)/entry.js
 
-$(m4dir)/%: lib/helper.m4 %
+$(m4dir)/%: $(m4lib) %
 	mkdir -p $(@D)
 	$(m4) $^ >$@
 
