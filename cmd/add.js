@@ -22,7 +22,7 @@ import {
 	format_resolve_copyright,
 	format_use_copyright,
 } from '../lib/format.js'
-import { license_pick } from '../lib/license.js'
+import { license_pick, license_format_header } from '../lib/license.js'
 
 function push_change(changes, tail_pos, at_pos, prev, next)
 {
@@ -89,19 +89,18 @@ async function insert_shebang(ctx, doc, begin, shebang, cached, push_change_fn)
 
 async function insert_license(ctx, doc, begin, fmt, cached, push_change_fn)
 {
-	let name = cached
+	let id = cached
 
-	if (!name) {
-		name = await license_pick([
+	if (!id) {
+		id = await license_pick([
 			'Select the target license',
 			'license',
 		])
 
-		ctx.ws_state.update('NAME_license', name)
+		ctx.ws_state.update('NAME_license', id)
 	}
 
-	const repl = `SPDX-License-Identifier: ${name}`
-	const header = fmt.replace(REPLACE_STR_RE, repl)
+	const header = license_format_header(fmt, id)
 	const line = doc.lineAt(begin)
 
 	return push_change_fn(begin, line.text, header)

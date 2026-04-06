@@ -3,32 +3,28 @@
  * Copyright 2025 Jiamu Sun <barroit@linux.com>
  */
 
-import { extname } from 'node:path'
-
-import { fmt_ensure_arg, fmt_resolve } from '../lib/fmt.js'
+import { format_resolve_license } from '../lib/format.js'
 import { git_ls_files } from '../lib/git.js'
+import { license_format_header, license_pick } from '../lib/license.js'
 import {
-	vsc_apply,
+	vsc_apply_edit,
 	vsc_open,
 	vsc_save_all,
 	vsc_ws_edit,
 	vsc_uri,
 } from '../lib/vsc.js'
 
-import {
-	spdx_fixup_id,
-	spdx_emit_header,
-	spdx_pick_license,
-} from '../lib/spdx.js'
-
-function move(doc, cursor, from, to)
+function move(conf, doc, cursor, old_id, new_id)
 {
-	const format = this.fetch_format()
-	const { spdx: fmt_in } = fmt_resolve(format, doc, [ 'spdx' ])
-	const fmt = fmt_ensure_arg(fmt_in)
+	const lang = doc.languageId
+	const filename = doc.uri.fsPath
 
-	const origin = spdx_emit_header(fmt, from)
-	const replace = spdx_emit_header(fmt, to)
+	const path_comps = filename.split('.')
+	const suffix = path_comps[path_comps.length - 1]
+
+	const fmt = format_resolve_license(conf, lang, suffix)
+	const old_header = license_format_header(fmt, old_id)
+	const new_header = license_format_header(fmt, new_id)
 
 	let line = doc.lineAt(0)
 	let text = line.text
@@ -38,37 +34,33 @@ function move(doc, cursor, from, to)
 		text = line.text
 	}
 
-	if (text == origin)
-		cursor.replace(doc.uri, line.range, replace)
+	if (text == old_header)
+		cursor.replace(doc.uri, line.range, new_header)
 }
 
-export async function exec()
+export async function exec(ctx)
 {
 	const edit = new vsc_ws_edit()
 
-	const from_id = await spdx_pick_license({
-		prompt: 'Select the license to replace',
-		hint: 'from',
-	})
-	const to_id = await spdx_pick_license({
-		prompt: 'Select the license to replace with',
-		hint: 'to',
-	})
+	const old_id = await license_pick([
+		'Select the license to replace',
+		'from',
+	])
+	const new_id = await license_pick([
+		'Select the new license',
+		'to',
+	])
 
-	const from = spdx_fixup_id(from_id)
-	const to = spdx_fixup_id(to_id)
-
-	let files = git_ls_files()
+	let filenames = git_ls_files()
+	const files = filenames.map(vsc_uri.file)
+	const conf = ctx.resolve_conf()
 	let tasks = []
-
-	files = files.map(vsc_uri.file)
 
 	for (const file of files) {
 		const task = vsc_open(file).then(doc =>
 		{
-			move.call(this, doc, edit, from, to)
+			move(conf, doc, edit, old_id, new_id)
 			return doc
-
 		}).catch(console.error)
 
 		tasks.push(task)
@@ -77,6 +69,6 @@ export async function exec()
 	tasks = await Promise.all(tasks)
 	await vsc_apply_edit(edit)
 
-	tasks = tasks.map(doc => doc && doc.save())
+	tasks = tasks.forEach(doc => doc && doc.save())
 	return tasks
 }
