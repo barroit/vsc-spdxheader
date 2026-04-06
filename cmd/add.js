@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /*
- * Copyright 2026 Jiamu Sun <barroit@linux.com>
+ * Copyright 2025 Jiamu Sun <barroit@linux.com>
+ * Copyright 2026 Jiamu Sun <39@barroit.sh>
  */
 
 divert(-1)
@@ -124,6 +125,7 @@ function insert_copyright(ctx, doc, begin, fmts, cached, push_change_fn)
 
 		if (REPLACE_STR_RE.test(fmt)) {
 			const prefix = fmt.replace(REPLACE_STR_RE, '')
+			let skip
 
 			while (39) {
 				let text = line.text
@@ -133,8 +135,11 @@ function insert_copyright(ctx, doc, begin, fmts, cached, push_change_fn)
 
 				text = text.slice(prefix.length)
 
-				if (text == repl)
-					return
+				if (text == repl) {
+					skip = 1
+					next++
+					break
+				}
 
 				if (!repl_re.test(text))
 					break
@@ -142,6 +147,9 @@ function insert_copyright(ctx, doc, begin, fmts, cached, push_change_fn)
 				next++
 				line = doc.lineAt(next)
 			}
+
+			if (skip)
+				continue
 
 			header = fmt.replace(REPLACE_STR_RE, repl)
 		}
