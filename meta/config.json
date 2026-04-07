@@ -2,7 +2,7 @@ dnl SPDX-License-Identifier: GPL-3.0-or-later
 dnl
 "NAME.shebang": {
    "type": "object",
-   "description": "...",
+   "description": "https://docs.barroit.sh/vsc-spdxheader/config/shebang.html",
    "default": {
       "py": "/usr/bin/python3",
       "sh": [
@@ -14,7 +14,7 @@ dnl
 },
 "NAME.license": {
    "type": "object",
-   "description": "...",
+   "description": "https://docs.barroit.sh/vsc-spdxheader/config/license.html",
    "default": {
       "*":     "FB_LICENSE",
       "c":     "//",
@@ -34,7 +34,8 @@ dnl
 },
 "NAME.copyright": {
    "type": "object",
-   "description": "...",
+   "description": dnl
+"https://docs.barroit.sh/vsc-spdxheader/config/copyright.html",
    "default": {
       "*": [
          "FB_COPYRIGHT_BEGIN",
@@ -46,7 +47,7 @@ dnl
          "  -- {}",
          "  -->"
       ],
-      "python": [
+      "py": [
          "#",
          "# {}",
          "#"
@@ -58,7 +59,8 @@ dnl
 },
 "NAME.copyright_rule": {
    "type": "object",
-   "markdownDescription": "...",
+   "description": dnl
+"https://docs.barroit.sh/vsc-spdxheader/config/copyright_rule.html",
    "default": {
       "c":    [],
       "h":    [],
