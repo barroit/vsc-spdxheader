@@ -3,27 +3,27 @@ dnl
 {
    "command": "NAME.add",
    "title": "add header (select)",
-   "category": "spdx",
+   "category": "NAME",
    "enablement": "workbenchState != empty && dnl
                   activeEditor =~ /text(File|Resource)Editor$/"
 },
 {
    "command": "NAME.add-cached",
    "title": "add header",
-   "category": "spdx",
+   "category": "NAME",
    "enablement": "workbenchState != empty && dnl
                   activeEditor =~ /text(File|Resource)Editor$/"
 },
 {
    "command": "NAME.update",
    "title": "update header",
-   "category": "spdx",
+   "category": "NAME",
    "enablement": "workbenchState != empty && dnl
                   activeEditor =~ /text(File|Resource)Editor$/"
 },
 {
    "command": "NAME.move-ws",
    "title": "move license id (workspace)",
-   "category": "spdx",
+   "category": "NAME",
    "enablement": "workbenchState != empty"
 }
