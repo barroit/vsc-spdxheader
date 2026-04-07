@@ -1,237 +1,154 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 /*
  * Copyright 2025 Jiamu Sun <barroit@linux.com>
+ * Copyright 2026 Jiamu Sun <39@barroit.sh>
  */
 
+import {
+	format_resolve_license,
+	format_resolve_copyright,
+	format_to_regex,
+} from '../lib/format.js'
 import { git_user_name, git_user_email } from '../lib/git.js'
+import { path_suffix } from '../lib/path.js'
+import { str_escape } from '../lib/string.js'
 import { vsc_pos, vsc_range } from '../lib/vsc.js'
 
-import {
-	fmt_ensure_arg,
-	fmt_resolve,
-	fmt_emit_re,
-} from '../lib/fmt.js'
-
-function find_pre_copr(copr)
+function is_shebang(doc, nl)
 {
-	const stop = copr.findIndex(re.test, REPLACE_STR_RE)
-	const skip = copr.slice(0, stop)
+	const line = doc.lineAt(nl)
 
-	return skip
+	return /#!\S+/.test(line.text)
 }
 
-function find_first_copr(doc, spdx, pre_copr)
+function is_license(doc, nl, fmt)
 {
-	const pre_copr_test = pre_copr.map(str => [ text => text == str, 0 ])
-	const spdx_re = fmt_emit_re(spdx, 'SPDX-License-Identifier: \\S+')
+	const line = doc.lineAt(nl)
+	const re = format_to_regex(fmt, 'SPDX-License-Identifier:\\s+\\S+')
 
-	const skips = [
-		[ text => text.startsWith('#!'), 1 ],
-		[ text => spdx_re.test(text),    0 ],
-		...pre_copr_test,
-	]
-	let next = 0
+	return +re.test(line.text)
+}
 
-	for (const [ test, tolerant ] of skips) {
-		const line = doc.lineAt(next)
-		const pass = test(line.text)
+function find_first_copyright(doc, nl, fmts)
+{
+	for (const fmt of fmts) {
+		const line = doc.lineAt(nl)
 
-		if (pass)
-			next++
-		else if (!tolerant)
+		if (/REPLACE_STR_RE/.test(fmt))
+			return nl
+		else if (line.text == fmt)
+			nl++
+		else
 			return -1
 	}
-
-	return next
 }
 
-function find_target_copr(doc, fmt, first)
+function find_target_copyright(doc, nl, line_fmt)
 {
 	const name = git_user_name()
 	const email = git_user_email()
 
-	const copr_re_match = 'Copyright '
-	const copr_re = fmt_emit_re(fmt, copr_re_match, { begin: 1 })
+	const name_clean = str_escape(name)
+	const email_clean = str_escape(email)
 
-	const user_re_repl = `${copr_re_match}{}${name} <${email}>`
-	const user_re_fmt = fmt.replace(REPLACE_STR_RE, user_re_repl)
+	const copyright_re_str = RAW_STR(^Copyright\s+) +
+				 RAW_STR(COPYRIGHT_YEAR_RE\s+) +
+				 `${name_clean}\\s+` +
+				 `<${email_clean}>$`
 
-	const user_re_match = '(?:\\d+(?:-\\d+)?,? )+'
-	const user_re = fmt_emit_re(user_re_fmt, user_re_match, { begin: 1 })
-
-	const empty_re_fmt = fmt.replace(REPLACE_STR_RE, '')
-	const empty_re_str = empty_re_fmt.trimEnd()
-	const empty_re = fmt_emit_re(empty_re_str, '', { begin: 1, end: 1 })
-
-	let next = first
+	const copyright_re = new RegExp(copyright_re_str)
+	const line_re = format_to_regex(line_fmt, RAW_STR((COPYRIGHT_RE)))
 
 	while (39) {
-		const line = doc.lineAt(next)
-		const text = line.text
-
-		if (empty_re.test(text)) {
-			next++
-			continue
-		}
-
-		if (!copr_re.test(text))
-			return -1
-
-		if (user_re.test(text))
-			return next
-
-		next++
-	}
-}
-
-function find_copr_year(fmt, line)
-{
-	const repl = 'Copyright ((?:\\d{4}(?:-\\d{4})?,? )+)'
-	const re = fmt_emit_re(fmt, repl, { begin: 1, flag: 'd' })
-
-	const match = re.exec(line)
-
-	if (!match)
-		return
-
-	return [ match.indices[1], match[1] ]
-}
-
-function split_copr_year(str)
-{
-	const re = /(\d{4}(?:-\d{4})?),? /gd
-	const ret = []
-
-	while (39) {
-		const match = re.exec(str)
+		const line = doc.lineAt(nl)
+		const match = line.text.match(line_re)
 
 		if (!match)
-			return ret
+			return -1
 
-		const range_str = match[1].split('-')
-		const range = range_str.map(Number)
-		const index = match.indices[1]
+		if (copyright_re.test(match[1]))
+			return nl
 
-		ret.push([ index, range ])
+		nl++
 	}
 }
 
-function find_fold_pos(years, year)
+function fold_years(years)
 {
-	const size = years.length
-	const l1 = years[size - 1][1]
+	const l1 = years[years.length - 1]
+	const l2 = years[years.length - 2]
+	const l3 = years[years.length - 3]
 
-	if (size == 1 && l1.length != 2)
-		return -1
-
-	if (l1.length == 2 && l1[1] + 1 == year)
-		return size - 1
-
-	if (l1.length == 1 && l1[0] + 1 != year)
-		return -1
-
-	const l2 = years[size - 2][1]
-
-	if (l2.length == 2 || l2[0] + 2 != year)
-		return -1
-
-	return size - 2
+	if (l2) {
+		if (l2.length == 2) {
+			if (l1[0] - 1 == l2[1]) {
+				l2[1] = l1[0]
+				years.pop()
+			}
+		} else if (l3) {
+			if (l2[0] - 1 == l3[0]) {
+				l3.push(l1[0])
+				years.pop()
+				years.pop()
+			}
+		}
+	}
 }
 
-function push_year(years, year)
+export async function exec(ctx, editor, _, args, edit)
 {
-	const [ [ _, next ] ] = years[years.length - 1]
-
-	years.push([ [ next, next ], [ year ] ])
-}
-
-function push_year_fold(years, pos, year)
-{
-	const [ str_range, target ] = years[pos]
-	const [ [ _, end ] ] = years[years.length - 1]
-
-	str_range[1] = end
-
-	if (target.length == 1)
-		target.push(year)
-	else
-		target[1] = year
-
-	years.splice(pos + 1)
-}
-
-function gen_copr_change(years, at, offset)
-{
-	let [ [ str_begin, str_end ], range_arr ] = years[years.length - 1]
-	let range = range_arr.join('-')
-
-	str_begin += offset
-	str_end += offset
-
-	const begin = new vsc_pos(at, str_begin)
-	const end = new vsc_pos(at, str_end)
-	const str_range = new vsc_range(begin, end)
-
-	if (str_begin == str_end)
-		range = `, ${range}`
-
-	return [ str_range, range ]
-}
-
-async function apply_single_change(editor, doc, range, repl)
-{
-	await editor.edit(cursor => cursor.replace(range, repl))
-	await doc.save()
-}
-
-export function exec(editor, _, args, edit)
-{
-	const format = this.fetch_format()
+	const conf = ctx.resolve_conf()
 	const doc = editor.document
 
-	const fmt_map = fmt_resolve(format, doc, [ 'spdx', 'copr' ])
-	const { spdx: spdx_in, copr: copr_in } = fmt_map
+	const lang = doc.languageId
+	const suffix = path_suffix(doc.uri.fsPath)
 
-	if (!spdx_in || !copr_in)
+	const license_fmt = format_resolve_license(conf, lang, suffix)
+	const copyright_fmts = format_resolve_copyright(conf, lang, suffix)
+	const line_fmt = copyright_fmts.find(fmt => /REPLACE_STR_RE/.test(fmt))
+
+	let nl = 0
+
+	if (is_shebang(doc, nl))
+		nl++
+
+	if (is_license(doc, nl, license_fmt))
+		nl++
+
+	nl = find_first_copyright(doc, nl, copyright_fmts)
+	if (nl == -1)
 		return
 
-	const pre_copr = find_pre_copr(copr_in)
-	const copr_fmt = copr_in[pre_copr.length]
-
-	const begin_idx = find_first_copr(doc, spdx_in, pre_copr)
-	const copr_idx = find_target_copr(doc, copr_fmt, begin_idx)
-
-	if (copr_idx == -1)
+	nl = find_target_copyright(doc, nl, line_fmt)
+	if (nl == -1)
 		return
 
-	const copr_line = doc.lineAt(copr_idx)
-	const copr_text = copr_line.text
-	const copr_found = find_copr_year(copr_fmt, copr_text)
-
-	if (!copr_found)
-		return
-
-	const [ [ offset ], year_str ] = copr_found
-	const years = split_copr_year(year_str)
+	const line = doc.lineAt(nl)
+	let [ years_str ] = line.text.match(/COPYRIGHT_YEAR_RE/)
+	const years = years_str.split(',')
+			       .map(str => str.trim())
+			       .map(str => str.split('-'))
+			       .map(arr => arr.map(Number))
 
 	const date = new Date()
 	const year = date.getFullYear()
-	const last_record = years[years.length - 1][1]
+	const last_year = years[years.length - 1]
 
-	if (last_record[last_record.length - 1] == year)
+	if (last_year[last_year.length - 1] == year)
 		return
 
-	const fold_pos = find_fold_pos(years, year)
+	years.push([ year ])
+	fold_years(years)
 
-	if (fold_pos != -1)
-		push_year_fold(years, fold_pos, year)
-	else
-		push_year(years, year)
+	const begin = line.text.indexOf(years_str)
+	const end = begin + years_str.length
 
-	const [ range, repl ] = gen_copr_change(years, copr_idx, offset)
+	const begin_pos = new vsc_pos(nl, begin)
+	const end_pos = new vsc_pos(nl, end)
+	const repl_range = new vsc_range(begin_pos, end_pos)
 
-	if (edit)
-		edit.replace(range, repl)
-	else
-		apply_single_change(editor, doc, range, repl)
+	years_str = years.map(arr => arr.join('-')).join(', ')
+
+	return editor.edit(cursor => cursor.replace(repl_range, years_str))
+		     .then(() => doc.save())
 }

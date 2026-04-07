@@ -206,8 +206,6 @@ export async function exec(ctx, editor, _, args = [])
 	if (!changes.length)
 		return
 
-	editor.edit(cursor => apply_changes(changes, cursor, doc, next))
-
-	if (!doc.isUntitled)
-		doc.save()
+	return editor.edit(cursor => apply_changes(changes, cursor, doc, next))
+		     .then(() => !doc.isUntitled && doc.save())
 }
