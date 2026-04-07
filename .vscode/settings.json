@@ -3,6 +3,5 @@
 {
    "search.exclude": {
       "**/license-list-data": true
-   },
-   "spdxheader.shebang": null,
+   }
 }

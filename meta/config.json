@@ -4,7 +4,7 @@ dnl
    "type": "object",
    "description": "...",
    "default": {
-      "python": "/usr/bin/python3",
+      "py": "/usr/bin/python3",
       "sh": [
          "/bin/sh",
          "/bin/bash",
@@ -23,7 +23,13 @@ dnl
       "java":  "//",
       "jsonc": "/* {} */",
       "js":    "/* {} */",
-      "rst":   ".."
+      "jsx":   "/* {} */",
+      "ts":    "/* {} */",
+      "tsx":   "/* {} */",
+      "m4":    "[[dnl]]",
+      "rst":   "..",
+      "yaml":  "{}",
+      "tex":   "%"
    }
 },
 "NAME.copyright": {
@@ -44,6 +50,9 @@ dnl
          "#",
          "# {}",
          "#"
+      ],
+      "m4": [
+         "[[dnl]]"
       ]
    }
 },
@@ -51,14 +60,15 @@ dnl
    "type": "object",
    "markdownDescription": "...",
    "default": {
-      "c": [],
-      "h": [],
+      "c":    [],
+      "h":    [],
       "html": [],
       "java": [],
-      "js": [],
-      "jsx": [],
-      "python": [],
-      "ts": [],
-      "tsx": []
+      "js":   [],
+      "ts":   [],
+      "jsx":  [],
+      "tsx":  [],
+      "py":   [],
+      "m4":   []
    }
 }
