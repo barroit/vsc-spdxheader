@@ -13,17 +13,17 @@ divert(0)dnl
 
 import { isMatch as test } from 'picomatch'
 
-import { git_user_name, git_user_email } from '../lib/git.js'
-import { die } from '../lib/mesg.js'
-import { vsc_pos, vsc_range, vsc_quick_pick } from '../lib/vsc.js'
-
 import {
 	format_resolve_shebang,
 	format_resolve_license,
 	format_resolve_copyright,
 	format_use_copyright,
 } from '../lib/format.js'
+import { git_user_name, git_user_email } from '../lib/git.js'
 import { license_pick, license_format_header } from '../lib/license.js'
+import { die } from '../lib/mesg.js'
+import { path_suffix } from '../lib/path.js'
+import { vsc_pos, vsc_range, vsc_quick_pick } from '../lib/vsc.js'
 
 function push_change(changes, tail_pos, at_pos, prev, next)
 {
@@ -164,11 +164,9 @@ export async function exec(ctx, editor, _, args = [])
 {
 	const conf = ctx.resolve_conf()
 	const doc = editor.document
-	const lang = doc.languageId
 
-	const filename = doc.uri.fsPath
-	const path_comps = filename.split('.')
-	const suffix = path_comps[path_comps.length - 1]
+	const lang = doc.languageId
+	const suffix = path_suffix(doc.uri.fsPath)
 
 	const shebang = format_resolve_shebang(conf, lang, suffix)
 	const license = format_resolve_license(conf, lang, suffix)
