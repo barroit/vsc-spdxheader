@@ -18,11 +18,13 @@ import {
 	format_resolve_license,
 	format_resolve_copyright,
 	format_use_copyright,
+	format_to_regex,
 } from '../lib/format.js'
 import { git_user_name, git_user_email } from '../lib/git.js'
 import { license_pick, license_format_header } from '../lib/license.js'
 import { die } from '../lib/mesg.js'
 import { path_suffix } from '../lib/path.js'
+import { str_escape } from '../lib/string.js'
 import { vsc_pos, vsc_range, vsc_quick_pick } from '../lib/vsc.js'
 
 function push_change(changes, tail_pos, at_pos, prev, next)
@@ -107,42 +109,49 @@ async function insert_license(ctx, doc, begin, fmt, cached, push_change_fn)
 	return push_change_fn(begin, line.text, header)
 }
 
-function insert_copyright(ctx, doc, begin, fmts, cached, push_change_fn)
+function insert_copyright(ctx, doc, begin, line_fmts, cached, push_change_fn)
 {
 	const date = new Date()
 	const year = date.getFullYear()
 
-	const user = git_user_name()
+	const name = git_user_name()
 	const email = git_user_email()
 
-	const repl = `Copyright ${year} ${user} <${email}>`
-	const repl_re = /^Copyright\s+\d{4}\s+[^<\n]+\s<[^@\s>]+@[^>\s]+>$/
+	const name_clean = str_escape(name)
+	const email_clean = str_escape(email)
+
+	const copyright_re_str = RAW_STR(^Copyright\s+) +
+				 RAW_STR(COPYRIGHT_YEAR_RE\s+) +
+				 `${name_clean}\\s+` +
+				 `<${email_clean}>$`
+	const copyright_re = new RegExp(copyright_re_str)
+
+	const repl = `Copyright ${year} ${name} <${email}>`
 	let next = begin
 
-	for (const fmt of fmts) {
+	for (const line_fmt of line_fmts) {
 		let line = doc.lineAt(next)
-		let header = fmt
+		let header = line_fmt
 
-		if (REPLACE_STR_RE.test(fmt)) {
-			const prefix = fmt.replace(REPLACE_STR_RE, '')
+		if (/REPLACE_STR_RE/.test(line_fmt)) {
 			let skip
+			const line_re = format_to_regex(line_fmt,
+							RAW_STR((COPYRIGHT_RE)))
 
 			while (39) {
-				let text = line.text
+				const match = line.text.match(line_re)
 
-				if (!text.startsWith(prefix))
-					break
+				if (match) {
+					const text = match[1]
 
-				text = text.slice(prefix.length)
-
-				if (text == repl) {
-					skip = 1
-					next++
+					if (copyright_re.test(text)) {
+						skip = 1
+						next++
+						break
+					}
+				} else {
 					break
 				}
-
-				if (!repl_re.test(text))
-					break
 
 				next++
 				line = doc.lineAt(next)
@@ -151,7 +160,7 @@ function insert_copyright(ctx, doc, begin, fmts, cached, push_change_fn)
 			if (skip)
 				continue
 
-			header = fmt.replace(REPLACE_STR_RE, repl)
+			header = line_fmt.replace(/REPLACE_STR_RE/, repl)
 		}
 
 		next += push_change_fn(next, line.text, header)
