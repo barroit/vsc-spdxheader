@@ -3,7 +3,7 @@ dnl
 {
    "name": "spdxheader",
    "type": "module",
-   "version": "0.2.2",
+   "version": "0.2.3",
    "publisher": "barroit",
    "license": "GPL-3.0-or-later",
    "main": "build/entry.js",
